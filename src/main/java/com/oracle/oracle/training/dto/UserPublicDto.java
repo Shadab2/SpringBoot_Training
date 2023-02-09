@@ -7,11 +7,9 @@ import lombok.*;
 @AllArgsConstructor
 @Data
 @ToString
-public class UserDto {
-    private String email;
+public class UserPublicDto {
     private String firstName;
     private String lastName;
-    private String mobileNo;
+    private String email;
     private String profileImage;
-    private Integer role;
 }

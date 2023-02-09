@@ -12,7 +12,6 @@ import lombok.ToString;
                 columnNames = "email"
         )
 )
-@ToString
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -35,6 +34,16 @@ public class User {
 
     @Lob
     private String profileImage;
+
+    private Integer role;
+
+    public int getRole() {
+        return role;
+    }
+
+    public void setRole(int role) {
+        this.role = role;
+    }
 
     public String getProfileImage() {
         return profileImage;
@@ -101,5 +110,11 @@ public class User {
 
     public void setMobileNo(String mobileNo) {
         this.mobileNo = mobileNo;
+    }
+
+    @Override
+    public String toString(){
+        return "User : "+"( id: "+this.getId()+", "+" email: "+this.getEmail()+", firstName: "+this.getFirstName()+", lastName: "+this.getLastName()+", mobileNo: "+
+                this.getMobileNo()+", profileImage : "+(profileImage!=null?profileImage.substring(0,10)+"...":"null")+" )";
     }
 }

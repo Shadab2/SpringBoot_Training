@@ -1,20 +1,24 @@
 package com.oracle.oracle.training.controllers;
 
 import com.oracle.oracle.training.dto.UserDto;
+import com.oracle.oracle.training.dto.UserPublicDto;
 import com.oracle.oracle.training.entity.User;
 import com.oracle.oracle.training.services.EmailService;
 import com.oracle.oracle.training.services.UserService;
 import com.oracle.oracle.training.services.CaptchaService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/api/user")
+@Slf4j
 public class UserController {
     @Autowired
     UserService userService;
@@ -27,6 +31,12 @@ public class UserController {
     public ResponseEntity<Map<String,String>> getCaptcha(){
         return new ResponseEntity<>(captchaService.generateCaptcha(),HttpStatus.CREATED);
     }
+
+    @GetMapping("/all")
+    public ResponseEntity<List<UserPublicDto>> findRegisterdUsers(){
+        return new ResponseEntity<>(userService.findAllRegisteredUsers(),HttpStatus.OK);
+    }
+
     @PostMapping("/register")
     public ResponseEntity<User> registerUser(@RequestBody Map<String,Object> requestMap){
         String firstName = (String) requestMap.get("firstName");
@@ -59,10 +69,18 @@ public class UserController {
 
     @PostMapping("/upload-profile")
     public ResponseEntity<Map<String,String>> uploadProfile(@RequestParam("file") MultipartFile file,@RequestParam("email") String email){
-        System.out.println(file.getName());
-        System.out.println(file.getOriginalFilename());
-        System.out.println(file.getContentType());
+        log.info("File Received , {} , {} , {} ",file.getContentType(),file.getOriginalFilename(),file.getName());
         String uploadedImage = userService.uploadProfileImage(email, file);
         return new ResponseEntity<>(Map.of("image",uploadedImage),HttpStatus.CREATED);
     }
+
+    @PostMapping("/update-role")
+    public String updateRole(@RequestBody Map<String,Object> reqMap){
+        String email = (String) reqMap.get("email");
+        Integer role = (Integer)reqMap.get("role");
+        userService.updateRole(email,role);
+        return "Role updated succesfully";
+    }
+
+
 }
