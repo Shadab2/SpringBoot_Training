@@ -31,11 +31,4 @@ public interface UserRepository extends JpaRepository<User,Integer> {
     )
     void updateProfileImage(String email,String profileImage);
 
-    @Modifying
-    @Query(
-            value = "update user_tbl set role = :role where email = :email ",
-            nativeQuery = true
-    )
-    void updateRole(String email,Integer role);
-
 }

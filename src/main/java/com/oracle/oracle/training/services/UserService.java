@@ -20,5 +20,4 @@ public interface UserService {
 
     List<UserPublicDto> findAllRegisteredUsers();
 
-    void updateRole(String email,Integer role);
 }

@@ -80,16 +80,12 @@ public class UserServiceImp implements UserService {
             log.info("Exception : Resource Not Found , No user with email {} found!",user.getEmail());
             throw new ResourceNotFound("No such user");
         }
-        if(user.getFirstName() == null) user.setFirstName(savedUser.getFirstName());
-        if(user.getLastName()==null) user.setLastName(savedUser.getLastName());
-        if(user.getPassword()==null) {
-            user.setPassword(savedUser.getPassword());
-        } else {
-            user.setPassword(BCrypt.hashpw(user.getPassword(),BCrypt.gensalt(10)));
-        }
-        if(user.getMobileNo() == null) user.setMobileNo(savedUser.getMobileNo());
-        log.info("User updated : {}",user);
-        userRepository.updateUser(user.getFirstName(),user.getLastName(),user.getMobileNo(),user.getPassword(),user.getEmail());
+        if(user.getFirstName() != null) savedUser.setFirstName(user.getFirstName());
+        if(user.getLastName()!= null) savedUser.setLastName(user.getLastName());
+        if(user.getPassword() != null) savedUser.setPassword(BCrypt.hashpw(user.getPassword(),BCrypt.gensalt(10)));
+        if(user.getMobileNo() != null) savedUser.setMobileNo(user.getMobileNo());
+        userRepository.save(savedUser);
+        log.info("User updated : {}",savedUser);
         return true;
     }
 
@@ -108,13 +104,14 @@ public class UserServiceImp implements UserService {
         }
         try {
             profileImage = Base64.getEncoder().encodeToString(file.getBytes());
-            userRepository.updateProfileImage(email,profileImage);
+            user.setProfileImage(profileImage);
+            userRepository.save(user);
         } catch (IOException e) {
             log.error("IOException : Error Converting to base64");
             e.printStackTrace();
             throw new BadRequestException("Invalid File");
         }
-        return  profileImage;
+        return userRepository.findByEmail(email).getProfileImage();
     }
 
     @Override
@@ -122,11 +119,6 @@ public class UserServiceImp implements UserService {
         List<User> users = userRepository.findAll();
         List<UserPublicDto> userPublicDtos = users.stream().map(user->mapToPublicDto(user)).toList();
         return  userPublicDtos;
-    }
-
-    @Override
-    public void updateRole(String email, Integer role) {
-        userRepository.updateRole(email,role);
     }
 
     private UserPublicDto mapToPublicDto(User user){

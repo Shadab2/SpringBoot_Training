@@ -12,6 +12,7 @@ configurations {
     compileOnly {
         extendsFrom annotationProcessor
     }
+    jaxb
 }
 
 repositories {
@@ -21,6 +22,45 @@ repositories {
         name 'Clojars'
     }
 }
+
+// tag::wsdl[]
+task genJaxb {
+    ext.sourcesDir = "${projectDir}/src/main/java/generated-sources/"
+    ext.classesDir = "${buildDir}/classes/jaxb"
+    ext.schema = "${projectDir}/src/main/resources/wsdl/numberConversion.wsdl"
+
+    outputs.dir classesDir
+
+    doLast() {
+        project.ant {
+            taskdef name: "xjc", classname: "com.sun.tools.xjc.XJCTask",
+                    classpath: configurations.jaxb.asPath
+            mkdir(dir: sourcesDir)
+            mkdir(dir: classesDir)
+
+            xjc(destdir: sourcesDir, schema: schema,
+                    package: "jaxb.wsdl") {
+                arg(value: "-wsdl")
+                produces(dir: sourcesDir, includes: "**/*.java")
+            }
+
+            javac(destdir: classesDir, source: 1.8, target: 1.8, debug: true,
+                    debugLevel: "lines,vars,source",
+                    classpath: configurations.jaxb.asPath) {
+                src(path: sourcesDir)
+                include(name: "**/*.java")
+                include(name: "*.java")
+            }
+
+            copy(todir: classesDir) {
+                fileset(dir: sourcesDir, erroronmissingdir: false) {
+                    exclude(name: "**/*.java")
+                }
+            }
+        }
+    }
+}
+// end::wsdl[]
 
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
@@ -32,11 +72,32 @@ dependencies {
     runtimeOnly 'com.h2database:h2'
     annotationProcessor 'org.projectlombok:lombok'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    implementation group: 'cn.apiclub.tool', name: 'simplecaptcha', version: '1.2.2'
     implementation 'org.springframework.boot:spring-boot-starter-mail'
 
+    // for Soap and JAXB java classes generation
+    implementation ('org.springframework.boot:spring-boot-starter-web-services') {
+        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-tomcat'
+    }
+    implementation 'org.springframework.ws:spring-ws-core'
+    jaxb "org.glassfish.jaxb:jaxb-xjc:4.0.1"
+    jaxb "org.glassfish.jaxb:jaxb-runtime:4.0.1"
+
+    // The next two dependencies are not necessary for generating code, only when running the code:
+    // Generated code depends on the JAXB API, which is removed from base Java in JDK 11, and therefore needs to be added
+    implementation "org.glassfish.jaxb:jaxb-runtime:4.0.1"
+    implementation 'jakarta.xml.bind:jakarta.xml.bind-api:4.0.0' // In JAXB v3, 'javax.xml.bind' was moved to 'jakarta.xml.bind'
 }
+
 
 tasks.named('test') {
     useJUnitPlatform()
 }
+
+
+
+// tag::bootjar[]
+bootJar {
+    baseName = 'oracle_training'
+    version =  '0.0.1'
+}
+// end::bootjar[]
