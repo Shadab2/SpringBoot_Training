@@ -25,16 +25,24 @@ public class UserServiceImp implements UserService {
 
     @Override
     public User createUser(String firstName, String lastName, String email, String password, String mobileNo) throws BadRequestException {
-        if(firstName.trim().length()==0 || lastName.trim().length()==0 || email.trim().length()==0 || password.trim().length()==0) {
-            log.info("Empty fields received in creating user with email {}",email);
+        List<String> emptyFeilds =new ArrayList<>();
+        if(firstName==null || firstName.trim().length()==0) emptyFeilds.add("firstName");
+        if(lastName==null || lastName.trim().length()==0) emptyFeilds.add("lastName");
+        if(password==null || password.trim().length()==0) emptyFeilds.add("password");
+        if(lastName==null || email.trim().length()==0) emptyFeilds.add("email");
+        if(mobileNo==null || mobileNo.trim().length()==0) emptyFeilds.add("mobileNo");
+
+        if(emptyFeilds.size()>0) {
+            log.error("Empty fields received in creating user with email {}",email);
+            log.debug("User Creation for email {} has failed since following feilds are empty {} ",email,emptyFeilds);
             throw new BadRequestException("Request Invalid");
         }
         Integer countOfEmail = userRepository.countByEmail(email);
         if(countOfEmail==1) {
-            log.info("A user with email {} is already present",email);
+            log.error("A user with email {} is already present",email);
             throw new BadRequestException("Email Id is already in used");
         }
-        String hashedPassword = BCrypt.hashpw(password,BCrypt.gensalt(10));
+        String hashedPassword = BCrypt.hashpw(email+password,BCrypt.gensalt(10));
         User user = new User();
         user.setEmail(email);
         user.setFirstName(firstName);
@@ -52,9 +60,9 @@ public class UserServiceImp implements UserService {
         UserDto resUser;
         try{
             User user = userRepository.findByEmail(email);
-            if(!BCrypt.checkpw(password,user.getPassword())) {
-                log.info("Password {} does not match",password);
-                throw new Exception();
+            if(!BCrypt.checkpw(email+password,user.getPassword())) {
+                log.error("Password {} does not match",password);
+                throw new ResourceNotFound("Resouce not found");
             }
            resUser = UserDto.builder()
                     .email(user.getEmail())
@@ -64,10 +72,8 @@ public class UserServiceImp implements UserService {
                     .profileImage(user.getProfileImage())
                     .role(user.getRole())
                     .build();
-            System.out.println(resUser.getRole()+" user Role");
         }catch (Exception e){
             log.error("Exception : Resource Not Found  , Email/password is invalid ");
-            e.printStackTrace();
             throw  new ResourceNotFound("Email/password is invalid");
         }
         return resUser;
@@ -77,12 +83,12 @@ public class UserServiceImp implements UserService {
     public boolean editUser(User user) throws ResourceNotFound {
         User savedUser = userRepository.findByEmail(user.getEmail());
         if(savedUser==null) {
-            log.info("Exception : Resource Not Found , No user with email {} found!",user.getEmail());
+            log.error("Exception : Resource Not Found , No user with email {} found!",user.getEmail());
             throw new ResourceNotFound("No such user");
         }
         if(user.getFirstName() != null) savedUser.setFirstName(user.getFirstName());
         if(user.getLastName()!= null) savedUser.setLastName(user.getLastName());
-        if(user.getPassword() != null) savedUser.setPassword(BCrypt.hashpw(user.getPassword(),BCrypt.gensalt(10)));
+        if(user.getPassword() != null) savedUser.setPassword(BCrypt.hashpw(user.getEmail()+user.getPassword(),BCrypt.gensalt(10)));
         if(user.getMobileNo() != null) savedUser.setMobileNo(user.getMobileNo());
         userRepository.save(savedUser);
         log.info("User updated : {}",savedUser);
@@ -95,20 +101,20 @@ public class UserServiceImp implements UserService {
         Set<String> allowedFileTypes = new HashSet<>(Arrays.asList("image/jpeg","image/png"));
         String profileImage = null;
         if(user==null) {
-            log.info("Exception : Bad Request Exception, No user with email {} found!",email);
+            log.error("Exception : Bad Request Exception, No user with email {} found!",email);
             throw new BadRequestException("No such user");
         }
         if(!allowedFileTypes.contains(file.getContentType())) {
-            log.info("Exception : Bad Request Exception , Invalid file type : {}",file.getContentType());
+            log.error("Exception : Bad Request Exception , Invalid file type : {}",file.getContentType());
             throw new BadRequestException("Invalid file type");
         }
         try {
             profileImage = Base64.getEncoder().encodeToString(file.getBytes());
             user.setProfileImage(profileImage);
             userRepository.save(user);
+            log.info("Profile image updated successfully.");
         } catch (IOException e) {
-            log.error("IOException : Error Converting to base64");
-            e.printStackTrace();
+            log.error("Exception : IOException : Error Converting to base64");
             throw new BadRequestException("Invalid File");
         }
         return userRepository.findByEmail(email).getProfileImage();

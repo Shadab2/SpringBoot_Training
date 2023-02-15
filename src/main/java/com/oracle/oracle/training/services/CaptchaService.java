@@ -33,11 +33,11 @@ public class CaptchaService {
 
     public void verify(String id,String captcha) throws BadRequestException{
         if(!captchaStore.containsKey(id) || captchaStore.get(id).isExpired()) {
-            log.info("{Captcha {} with id : {} has Expired",captcha,id);
-            throw  new BadRequestException("Captcha Expired");
+            log.error("{Captcha {} with id : {} has Expired",captcha,id);
+            throw new BadRequestException("Captcha Expired");
         }
         if(!captchaStore.get(id).getCAPTCHA().equals(captcha)) {
-            log.info("No such captcha with captcha {} found in  the directory",captcha);
+            log.error("No such captcha with captcha {} found in  the directory",captcha);
             throw new BadRequestException("Invalid Captcha!");
         }
     }

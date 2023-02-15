@@ -27,7 +27,7 @@ public class UserController {
     @Autowired
     EmailService emailService;
 
-    @GetMapping("")
+    @GetMapping
     public ResponseEntity<Map<String,String>> getCaptcha(){
         return new ResponseEntity<>(captchaService.generateCaptcha(),HttpStatus.CREATED);
     }
@@ -37,7 +37,7 @@ public class UserController {
         return new ResponseEntity<>(userService.findAllRegisteredUsers(),HttpStatus.OK);
     }
 
-    @PostMapping("")
+    @PostMapping
     public ResponseEntity<User> registerUser(@RequestBody Map<String,Object> requestMap){
         String firstName = (String) requestMap.get("firstName");
         String email = (String) requestMap.get("email");
@@ -61,7 +61,7 @@ public class UserController {
         UserDto userDto = userService.verifyLogin(email,password);
         return new ResponseEntity<>(userDto,HttpStatus.OK);
     }
-    @PutMapping("")
+    @PutMapping
     public ResponseEntity<String> updateUser(@RequestBody User user){
         userService.editUser(user);
         return new ResponseEntity<>("updated sucessfully",HttpStatus.OK);
