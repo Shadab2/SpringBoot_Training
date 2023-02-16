@@ -14,4 +14,5 @@ public class UserDto {
     private String mobileNo;
     private String profileImage;
     private Integer role;
+    private String token;
 }

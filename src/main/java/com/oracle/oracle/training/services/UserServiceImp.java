@@ -3,6 +3,7 @@ package com.oracle.oracle.training.services;
 import com.oracle.oracle.training.dto.UserDto;
 import com.oracle.oracle.training.dto.UserPublicDto;
 import com.oracle.oracle.training.entity.User;
+import com.oracle.oracle.training.exceptions.AccessDeniedException;
 import com.oracle.oracle.training.exceptions.BadRequestException;
 import com.oracle.oracle.training.exceptions.ResourceNotFound;
 import com.oracle.oracle.training.repository.UserRepository;
@@ -22,6 +23,8 @@ import java.util.*;
 public class UserServiceImp implements UserService {
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private AuthService authService;
 
     @Override
     public User createUser(String firstName, String lastName, String email, String password, String mobileNo) throws BadRequestException {
@@ -71,6 +74,7 @@ public class UserServiceImp implements UserService {
                     .mobileNo(user.getMobileNo())
                     .profileImage(user.getProfileImage())
                     .role(user.getRole())
+                    .token(authService.generateJWTToken(user))
                     .build();
         }catch (Exception e){
             log.error("Exception : Resource Not Found  , Email/password is invalid ");
@@ -80,11 +84,15 @@ public class UserServiceImp implements UserService {
     }
 
     @Override
-    public boolean editUser(User user) throws ResourceNotFound {
+    public boolean editUser(String email, User user) throws ResourceNotFound , AccessDeniedException {
         User savedUser = userRepository.findByEmail(user.getEmail());
         if(savedUser==null) {
             log.error("Exception : Resource Not Found , No user with email {} found!",user.getEmail());
             throw new ResourceNotFound("No such user");
+        }
+        if(!email.equals(user.getEmail())){
+            log.error("Cannot update as token mismatch");
+            throw new AccessDeniedException("Can only update your account");
         }
         if(user.getFirstName() != null) savedUser.setFirstName(user.getFirstName());
         if(user.getLastName()!= null) savedUser.setLastName(user.getLastName());
@@ -121,7 +129,9 @@ public class UserServiceImp implements UserService {
     }
 
     @Override
-    public List<UserPublicDto> findAllRegisteredUsers() {
+    public List<UserPublicDto> findAllRegisteredUsers(String email) throws AccessDeniedException {
+        Integer isAdmin = userRepository.findRoleByEmail(email);
+        if(isAdmin!=0) throw new AccessDeniedException("Unauthorized email");
         List<User> users = userRepository.findAll();
         List<UserPublicDto> userPublicDtos = users.stream().map(user->mapToPublicDto(user)).toList();
         return  userPublicDtos;
