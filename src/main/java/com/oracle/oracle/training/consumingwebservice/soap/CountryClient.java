@@ -1,4 +1,4 @@
-package com.oracle.oracle.training.consumingwebservice;
+package com.oracle.oracle.training.consumingwebservice.soap;
 
 import com.oracle.oracle.training.websamples.*;
 import lombok.extern.slf4j.Slf4j;

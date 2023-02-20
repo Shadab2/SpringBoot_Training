@@ -15,7 +15,9 @@ public interface UserRepository extends JpaRepository<User,Integer> {
     User findByEmail(String email);
 
     @Query("select u.role from User u where u.email = ?1")
-    Integer findRoleByEmail(String email);
+            Integer findRoleByEmail(String email);
+
+    Boolean existsByEmailAndRole(String email,Integer role);
 
     @Modifying
     @Query(

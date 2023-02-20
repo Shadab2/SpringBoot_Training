@@ -13,7 +13,7 @@ public class AuthConfig {
         AuthFilter authFilter = new AuthFilter();
         registrationBean.setFilter(authFilter);
         registrationBean.addUrlPatterns("/api/user/*");
-        registrationBean.addUrlPatterns("/api/country/*");
+        registrationBean.addUrlPatterns("/api/service/*");
         return registrationBean;
     }
 }

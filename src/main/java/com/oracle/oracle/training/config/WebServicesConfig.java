@@ -1,12 +1,13 @@
 package com.oracle.oracle.training.config;
 
-import com.oracle.oracle.training.consumingwebservice.CountryClient;
+import com.oracle.oracle.training.consumingwebservice.soap.CountryClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
+import org.springframework.web.client.RestTemplate;
 
 @Configuration
-public class SoapConfig {
+public class WebServicesConfig {
     @Bean
     public Jaxb2Marshaller marshaller(){
         Jaxb2Marshaller jaxb2Marshaller = new Jaxb2Marshaller();
@@ -20,5 +21,10 @@ public class SoapConfig {
         client.setMarshaller(marshaller);
         client.setUnmarshaller(marshaller);
         return  client;
+    }
+
+    @Bean
+    public RestTemplate restTemplate(){
+        return new RestTemplate();
     }
 }

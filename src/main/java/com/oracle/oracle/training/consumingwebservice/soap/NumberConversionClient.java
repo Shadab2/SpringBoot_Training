@@ -1,4 +1,4 @@
-package com.oracle.oracle.training.consumingwebservice;
+package com.oracle.oracle.training.consumingwebservice.soap;
 
 import org.springframework.ws.client.core.support.WebServiceGatewaySupport;
 

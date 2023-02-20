@@ -130,8 +130,9 @@ public class UserServiceImp implements UserService {
 
     @Override
     public List<UserPublicDto> findAllRegisteredUsers(String email) throws AccessDeniedException {
-        Integer isAdmin = userRepository.findRoleByEmail(email);
-        if(isAdmin!=0) throw new AccessDeniedException("Unauthorized email");
+//        Integer isAdmin = userRepository.findRoleByEmail(email);
+        boolean  isAdmin = userRepository.existsByEmailAndRole(email,0);
+        if(!isAdmin) throw new AccessDeniedException("Unauthorized email");
         List<User> users = userRepository.findAll();
         List<UserPublicDto> userPublicDtos = users.stream().map(user->mapToPublicDto(user)).toList();
         return  userPublicDtos;

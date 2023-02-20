@@ -1,9 +1,6 @@
 package com.oracle.oracle.training;
 
-import com.oracle.oracle.training.consumingwebservice.CountryClient;
-import com.oracle.oracle.training.websamples.CapitalCityResponse;
-import com.oracle.oracle.training.websamples.FullCountryInfoResponse;
-import com.oracle.oracle.training.websamples.TCountryInfo;
+import com.oracle.oracle.training.consumingwebservice.rest.FetchUserClient;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
