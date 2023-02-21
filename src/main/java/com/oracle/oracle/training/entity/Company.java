@@ -1,14 +1,12 @@
 package com.oracle.oracle.training.entity;
 
-import jakarta.persistence.AttributeOverride;
-import jakarta.persistence.AttributeOverrides;
-import jakarta.persistence.Column;
-import jakarta.persistence.Embeddable;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Embeddable
+@Entity
+@Table (name = "company_tbl")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

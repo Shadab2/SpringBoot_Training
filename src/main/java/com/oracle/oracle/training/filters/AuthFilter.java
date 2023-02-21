@@ -24,7 +24,7 @@ public class AuthFilter extends GenericFilterBean {
         HttpServletResponse res = (HttpServletResponse) response;
         String authHeader = req.getHeader("Authorization");
         if(authHeader!=null){
-            String[] authHeaderArr= authHeader.split("Bearer ");
+            String[] authHeaderArr = authHeader.split("Bearer ");
             if(authHeaderArr.length > 1 && authHeaderArr[1]!=null){
                 String token = authHeaderArr[1];
                 try{

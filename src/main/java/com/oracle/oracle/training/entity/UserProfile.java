@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Map;
+
 @Entity
 @Table(
         name = "user_profile_tbl",
@@ -19,7 +21,7 @@ import lombok.NoArgsConstructor;
 public class UserProfile {
 
     @Id
-    private Long id;
+    private Integer id;
     private String name;
     private String username;
     private String email;
@@ -31,5 +33,4 @@ public class UserProfile {
     private String website;
     @Embedded
     private Company company;
-
 }
