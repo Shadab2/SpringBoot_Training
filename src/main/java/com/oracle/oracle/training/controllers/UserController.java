@@ -3,9 +3,11 @@ package com.oracle.oracle.training.controllers;
 import com.oracle.oracle.training.dto.UserDto;
 import com.oracle.oracle.training.dto.UserPublicDto;
 import com.oracle.oracle.training.entity.User;
+import com.oracle.oracle.training.services.AuthService;
 import com.oracle.oracle.training.services.EmailService;
 import com.oracle.oracle.training.services.UserService;
 import com.oracle.oracle.training.services.CaptchaService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -23,64 +25,28 @@ public class UserController {
     @Autowired
     UserService userService;
     @Autowired
-    CaptchaService captchaService;
-    @Autowired
     EmailService emailService;
 
-    @GetMapping("/register")
-    public ResponseEntity<Map<String,String>> getCaptcha(){
-        return new ResponseEntity<>(captchaService.generateCaptcha(),HttpStatus.CREATED);
-    }
-
     @GetMapping("/all")
-    public ResponseEntity<List<UserPublicDto>> findRegisterdUsers(){
-        return new ResponseEntity<>(userService.findAllRegisteredUsers(),HttpStatus.OK);
+    public ResponseEntity<List<UserPublicDto>> findRegisterdUsers(HttpServletRequest request){
+        String email = (String)request.getAttribute("email");
+        return new ResponseEntity<>(userService.findAllRegisteredUsers(email),HttpStatus.OK);
     }
 
-    @PostMapping("/register")
-    public ResponseEntity<User> registerUser(@RequestBody Map<String,Object> requestMap){
-        String firstName = (String) requestMap.get("firstName");
-        String email = (String) requestMap.get("email");
-        String lastName = (String) requestMap.get("lastName");
-        String password = (String) requestMap.get("password");
-        String mobileNo = (String) requestMap.get("mobileNo");
-        String captchaId = (String) requestMap.get("captchaId");
-        String captcha = (String) requestMap.get("captcha");
-        captchaService.verify(captchaId,captcha);
-        User user = userService.createUser(firstName,lastName,email,password,mobileNo);
-        captchaService.finishValidation(captchaId);
-//        emailService.sendEmail(email,"Account Created",
-//                "Hello, "+firstName+" Your account to Oracle tranings has sucessfully  created");
-        return new ResponseEntity<>(user, HttpStatus.OK);
-    }
 
-    @PostMapping("/login")
-    public ResponseEntity<UserDto> loginUser(@RequestBody Map<String,String> requestMap){
-        String email = requestMap.get("email");
-        String password = requestMap.get("password");
-        UserDto userDto = userService.verifyLogin(email,password);
-        return new ResponseEntity<>(userDto,HttpStatus.OK);
-    }
-    @PostMapping("/update")
-    public ResponseEntity<String> updateUser(@RequestBody User user){
-        userService.editUser(user);
+    @PutMapping
+    public ResponseEntity<String> updateUser(HttpServletRequest request,@RequestBody User user){
+        String email = (String) request.getAttribute("email");
+        userService.editUser(email,user);
         return new ResponseEntity<>("updated sucessfully",HttpStatus.OK);
     }
 
     @PostMapping("/upload-profile")
-    public ResponseEntity<Map<String,String>> uploadProfile(@RequestParam("file") MultipartFile file,@RequestParam("email") String email){
+    public ResponseEntity<Map<String,String>> uploadProfile(HttpServletRequest request,@RequestParam("file") MultipartFile file){
+        String email = (String)request.getAttribute("email");
         log.info("File Received , {} , {} , {} ",file.getContentType(),file.getOriginalFilename(),file.getName());
         String uploadedImage = userService.uploadProfileImage(email, file);
         return new ResponseEntity<>(Map.of("image",uploadedImage),HttpStatus.CREATED);
     }
-
-    @PostMapping("/update-role")
-    public String updateRole(@RequestBody Map<String,Object> reqMap){
-        String email = (String) reqMap.get("email");
-        Integer role = (Integer)reqMap.get("role");
-        userService.updateRole(email,role);
-        return "Role updated succesfully";
-    }
-
 
 }

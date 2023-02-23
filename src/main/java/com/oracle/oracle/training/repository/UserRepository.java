@@ -14,6 +14,11 @@ public interface UserRepository extends JpaRepository<User,Integer> {
 
     User findByEmail(String email);
 
+    @Query("select u.role from User u where u.email = ?1")
+            Integer findRoleByEmail(String email);
+
+    Boolean existsByEmailAndRole(String email,Integer role);
+
     @Modifying
     @Query(
             value = "update user_tbl set first_name = ?1, last_name = ?2," +
@@ -30,12 +35,5 @@ public interface UserRepository extends JpaRepository<User,Integer> {
             nativeQuery = true
     )
     void updateProfileImage(String email,String profileImage);
-
-    @Modifying
-    @Query(
-            value = "update user_tbl set role = :role where email = :email ",
-            nativeQuery = true
-    )
-    void updateRole(String email,Integer role);
 
 }
