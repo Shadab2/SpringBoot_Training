@@ -2,6 +2,7 @@ package com.oracle.oracle.training.services;
 
 import com.oracle.oracle.training.exceptions.BadRequestException;
 import com.oracle.oracle.training.utils.Captcha;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -11,6 +12,7 @@ import java.util.Random;
 
 @Slf4j
 @Service
+@Data
 public class CaptchaService {
     private Random random = new Random();
     private Map<String,Captcha> captchaStore = new HashMap();
@@ -26,7 +28,6 @@ public class CaptchaService {
         id.append(x.charAt(random.nextInt(x.length())));
         Captcha captcha = new Captcha(id.toString(),cpt.toString(),System.currentTimeMillis());
         captchaStore.put(captcha.getId(),captcha);
-        clearBuffer();
         return Map.of("captchaId",id.toString(),"captcha",captcha.getCAPTCHA());
     }
 

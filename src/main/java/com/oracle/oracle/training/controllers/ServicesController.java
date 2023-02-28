@@ -4,6 +4,7 @@ import com.oracle.oracle.training.consumingwebservice.rest.FetchUserClient;
 import com.oracle.oracle.training.consumingwebservice.soap.CountryClient;
 import com.oracle.oracle.training.dto.UserProfileList;
 import com.oracle.oracle.training.entity.UserProfile;
+import com.oracle.oracle.training.entity.purchase.PurchaseOrder;
 import com.oracle.oracle.training.services.UserProfileService;
 import com.oracle.oracle.training.websamples.ArrayOftCountryCodeAndName;
 import com.oracle.oracle.training.websamples.TCountryInfo;
@@ -35,6 +36,11 @@ public class ServicesController {
     @GetMapping("/users")
     public ResponseEntity<List<UserProfile>> getUsersInfo(){
         return new ResponseEntity<>(userProfileService.saveIfNotExistsAndfetchAllUsers(),HttpStatus.OK);
+    }
+
+    @GetMapping("/purchase-orders")
+    public ResponseEntity<List<PurchaseOrder>> getPurchaseOrders(){
+        return new ResponseEntity<>(userProfileService.getPurchaseOrders(),HttpStatus.OK);
     }
 
 }

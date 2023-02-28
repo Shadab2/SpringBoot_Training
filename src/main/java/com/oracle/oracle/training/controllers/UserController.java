@@ -24,8 +24,8 @@ import java.util.Map;
 public class UserController {
     @Autowired
     UserService userService;
-    @Autowired
-    EmailService emailService;
+//    @Autowired
+//    EmailService emailService;
 
     @GetMapping("/all")
     public ResponseEntity<List<UserPublicDto>> findRegisterdUsers(HttpServletRequest request){

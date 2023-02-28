@@ -5,7 +5,9 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.Map;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(
@@ -26,11 +28,16 @@ public class UserProfile {
     private String username;
     private String email;
 
-    @Embedded
-    private Address address;
 
+    private Address address;
     private String phone;
     private String website;
-    @Embedded
-    private Company company;
+
+    @ManyToMany
+    @JoinTable(
+            name = "User_Profile_Companies",
+            joinColumns = { @JoinColumn(name = "id") },
+            inverseJoinColumns = { @JoinColumn(name = "company_id") }
+    )
+    private Set<Company> companies = new HashSet<>();
 }
