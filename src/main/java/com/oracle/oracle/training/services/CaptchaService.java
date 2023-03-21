@@ -35,7 +35,7 @@ public class CaptchaService {
     public void verify(String id,String captcha) throws BadRequestException{
         if(!captchaStore.containsKey(id) || captchaStore.get(id).isExpired()) {
             log.error("{Captcha {} with id : {} has Expired",captcha,id);
-            throw new BadRequestException("Captcha Expired");
+            throw new BadRequestException("Invalid Captcha!");
         }
         if(!captchaStore.get(id).getCAPTCHA().equals(captcha)) {
             log.error("No such captcha with captcha {} found in  the directory",captcha);

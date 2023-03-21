@@ -1,5 +1,6 @@
 package com.oracle.oracle.training.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -19,12 +20,10 @@ import java.util.Set;
 public class Company {
     @Column(name = "company_id")
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer companyId;
     private String name;
     private String catchPhrase;
     private String  bs;
 
-    @ManyToMany( mappedBy = "companies" , fetch = FetchType.LAZY)
-    private Set<UserProfile> userProfiles = new HashSet<>();
 }

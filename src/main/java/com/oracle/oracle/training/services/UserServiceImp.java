@@ -23,8 +23,6 @@ import java.util.*;
 public class UserServiceImp implements UserService {
     @Autowired
     private UserRepository userRepository;
-    @Autowired
-    private AuthService authService;
 
     @Override
     public User createUser(String firstName, String lastName, String email, String password, String mobileNo) throws BadRequestException {
@@ -74,7 +72,7 @@ public class UserServiceImp implements UserService {
                     .mobileNo(user.getMobileNo())
                     .profileImage(user.getProfileImage())
                     .role(user.getRole())
-                    .token(authService.generateJWTToken(user))
+                    .token(AuthService.generateJWTToken(user))
                     .build();
         }catch (Exception e){
             log.error("Exception : Resource Not Found  , Email/password is invalid ");
@@ -85,7 +83,7 @@ public class UserServiceImp implements UserService {
 
     @Override
     public boolean editUser(String email, User user) throws ResourceNotFound , AccessDeniedException {
-        User savedUser = userRepository.findByEmail(user.getEmail());
+        User savedUser = userRepository.findByEmail(email);
         if(savedUser==null) {
             log.error("Exception : Resource Not Found , No user with email {} found!",user.getEmail());
             throw new ResourceNotFound("No such user");
