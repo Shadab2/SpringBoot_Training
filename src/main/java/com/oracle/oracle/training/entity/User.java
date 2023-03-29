@@ -1,7 +1,13 @@
 package com.oracle.oracle.training.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.oracle.oracle.training.entity.post.ResourcePost;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Data
@@ -30,15 +36,33 @@ public class User {
     private String lastName;
 
     @Column( nullable = false)
+    @JsonIgnore
     private String password;
 
     @Column( nullable = false)
     private String mobileNo;
 
+
     @Lob
     private String profileImage;
 
     private Integer role;
+
+    @OneToMany(cascade = CascadeType.ALL ,fetch = FetchType.EAGER,orphanRemoval = true)
+    @JoinColumn(name = "pc_fid", referencedColumnName = "id")
+    private List<Address> addresses = new ArrayList<>();
+
+    @JsonIgnore
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "user",cascade = CascadeType.ALL)
+    private List<ResourcePost> resourcePostList;
+
+    //contains comma seperated ids of the liked posts and saved posts
+    @Column(length = 500)
+    private String likedPostsList;
+
+    @Column(length = 500)
+    private String savedPostsList;
+
 
     @Override
     public String toString(){

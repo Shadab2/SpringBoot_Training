@@ -2,6 +2,7 @@ package com.oracle.oracle.training.services;
 
 import com.oracle.oracle.training.dto.UserDto;
 import com.oracle.oracle.training.dto.UserPublicDto;
+import com.oracle.oracle.training.entity.Address;
 import com.oracle.oracle.training.entity.User;
 import com.oracle.oracle.training.exceptions.AccessDeniedException;
 import com.oracle.oracle.training.exceptions.BadRequestException;
@@ -73,6 +74,7 @@ public class UserServiceImp implements UserService {
                     .profileImage(user.getProfileImage())
                     .role(user.getRole())
                     .token(AuthService.generateJWTToken(user))
+                   .addressList(user.getAddresses())
                     .build();
         }catch (Exception e){
             log.error("Exception : Resource Not Found  , Email/password is invalid ");
@@ -134,6 +136,31 @@ public class UserServiceImp implements UserService {
         List<User> users = userRepository.findAll();
         List<UserPublicDto> userPublicDtos = users.stream().map(user->mapToPublicDto(user)).toList();
         return  userPublicDtos;
+    }
+
+    @Override
+    public List<Address> addAddress(String email, Address address) throws ResourceNotFound,BadRequestException {
+        User user = userRepository.findByEmail(email);
+        if(user==null) throw new ResourceNotFound("No such user");
+        if(user.getAddresses().size()==3) {
+            throw  new BadRequestException("Cannot add more than 3 address");
+        }
+        try{
+        user.getAddresses().add(address);
+        userRepository.save(user);
+        }catch (Exception e){
+            throw  new BadRequestException("Empty feilds are not allowed");
+        }
+        return  user.getAddresses();
+    }
+
+    @Override
+    public boolean deleteAddress(String email, Integer addressId) throws  BadRequestException,ResourceNotFound{
+        User user = userRepository.findByEmail(email);
+        if(user==null) throw new ResourceNotFound("No such user available");
+        user.getAddresses().removeIf(address -> address.getId().equals(addressId));
+        userRepository.save(user);
+        return true;
     }
 
     private UserPublicDto mapToPublicDto(User user){

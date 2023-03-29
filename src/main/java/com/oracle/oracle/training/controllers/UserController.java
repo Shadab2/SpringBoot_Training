@@ -1,6 +1,7 @@
 package com.oracle.oracle.training.controllers;
 
 import com.oracle.oracle.training.dto.UserPublicDto;
+import com.oracle.oracle.training.entity.Address;
 import com.oracle.oracle.training.entity.User;
 import com.oracle.oracle.training.services.UserService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -23,13 +24,6 @@ public class UserController {
 //    @Autowired
 //    EmailService emailService;
 
-    @GetMapping("/all")
-    public ResponseEntity<List<UserPublicDto>> findRegisterdUsers(HttpServletRequest request){
-        String email = (String)request.getAttribute("email");
-        return new ResponseEntity<>(userService.findAllRegisteredUsers(email),HttpStatus.OK);
-    }
-
-
     @PutMapping
     public ResponseEntity<String> updateUser(HttpServletRequest request,@RequestBody User user){
         String email = (String) request.getAttribute("email");
@@ -45,4 +39,16 @@ public class UserController {
         return new ResponseEntity<>(Map.of("image",uploadedImage),HttpStatus.CREATED);
     }
 
+    @PostMapping("/address")
+    public ResponseEntity<List<Address>> addAddress(HttpServletRequest request, @RequestBody Address address){
+        String email = (String) request.getAttribute("email");
+        return  new ResponseEntity<>(userService.addAddress(email,address),HttpStatus.OK);
+    }
+
+    @DeleteMapping("/address/{addressId}")
+    public  ResponseEntity<String> deleteAddress(HttpServletRequest request,@PathVariable("addressId") Integer addressId){
+        String email = (String) request.getAttribute("email");
+        userService.deleteAddress(email,addressId);
+        return new ResponseEntity<>("deleted sucessfully",HttpStatus.OK);
+    }
 }

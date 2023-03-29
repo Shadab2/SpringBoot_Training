@@ -7,6 +7,8 @@ import com.oracle.oracle.training.entity.purchase.PurchaseOrder;
 import com.oracle.oracle.training.exceptions.BadRequestException;
 import com.oracle.oracle.training.exceptions.RequiredFieldsMissinigException;
 import com.oracle.oracle.training.exceptions.ResourceNotFound;
+import com.oracle.oracle.training.model.Geo;
+import com.oracle.oracle.training.model.UserProfileAddress;
 import com.oracle.oracle.training.repository.CompanyRepository;
 import com.oracle.oracle.training.repository.UserProfileRepository;
 import jakarta.transaction.Transactional;
@@ -52,7 +54,7 @@ public class UserProfileServiceImp implements UserProfileService{
 
             Map<String,Object> parsedAddress = (Map)parsedUserProfile.get("address");
             if(parsedAddress!=null) {
-                Address address1 = new Address();
+                UserProfileAddress address1 = new UserProfileAddress();
                 address1.setCity((String) parsedAddress.get("city"));
                 address1.setZipcode((String) parsedAddress.get("zipcode"));
                 address1.setStreet((String) parsedAddress.get("street"));

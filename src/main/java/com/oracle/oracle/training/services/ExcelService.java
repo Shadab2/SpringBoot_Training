@@ -1,8 +1,8 @@
 package com.oracle.oracle.training.services;
 
-import com.oracle.oracle.training.entity.Address;
+import com.oracle.oracle.training.model.UserProfileAddress;
 import com.oracle.oracle.training.entity.Company;
-import com.oracle.oracle.training.entity.Geo;
+import com.oracle.oracle.training.model.Geo;
 import com.oracle.oracle.training.entity.UserProfile;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
@@ -16,9 +16,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 public class ExcelService {
     public static List<String> USER_INFO = Arrays.asList("NAME","USERNAME","EMAIL","PHONE","WEBSITE");
@@ -121,7 +119,7 @@ public class ExcelService {
         cell.setCellValue(richTextString);
     }
 
-    private static void setCellValueAddress(Address address, Cell cell, String cellName) {
+    private static void setCellValueAddress(UserProfileAddress address, Cell cell, String cellName) {
         if(cellName.equals("STREET")) cell.setCellValue(address.getStreet());
         else if(cellName.equals("SUITE")) cell.setCellValue(address.getSuite());
         else if(cellName.equals("CITY")) cell.setCellValue(address.getCity());

@@ -1,4 +1,4 @@
-package com.oracle.oracle.training.entity;
+package com.oracle.oracle.training.model;
 
 
 import jakarta.persistence.*;

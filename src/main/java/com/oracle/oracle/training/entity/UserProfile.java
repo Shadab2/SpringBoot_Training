@@ -1,14 +1,13 @@
 package com.oracle.oracle.training.entity;
 
+import com.oracle.oracle.training.model.UserProfileAddress;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 @Entity
 @Table(
@@ -30,7 +29,8 @@ public class UserProfile {
     private String email;
 
 
-    private Address address;
+    @Embedded
+    private UserProfileAddress address;
     private String phone;
     private String website;
 

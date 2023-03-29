@@ -68,7 +68,7 @@
             <Zip>98112</Zip>
             <Country>USA</Country>
         </Address>
-        <Address Type="Billing">
+        <Address Type="Billing" >
             <Name>Jessica Arnold</Name>
             <Street>4055 Madison Ave</Street>
             <City>Buffalo</City>

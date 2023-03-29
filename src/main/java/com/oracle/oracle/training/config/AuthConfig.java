@@ -14,6 +14,9 @@ public class AuthConfig {
         registrationBean.setFilter(authFilter);
         registrationBean.addUrlPatterns("/api/user/*");
         registrationBean.addUrlPatterns("/api/service/*");
+        registrationBean.addUrlPatterns("/api/utility/*");
+        registrationBean.addUrlPatterns("/api/admin/*");
+        registrationBean.addUrlPatterns("/api/post/*");
         return registrationBean;
     }
 }
