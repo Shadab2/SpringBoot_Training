@@ -15,4 +15,9 @@ public class Comments implements Serializable {
     private Integer id;
     private Integer userId;
     private String message;
+    private String userProfileImage;
+    private String userName;
+
+    private String dateModified;
+
 }

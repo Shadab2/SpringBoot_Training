@@ -1,19 +1,19 @@
 package com.oracle.oracle.training.entity.post;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Lob;
-import jakarta.persistence.Table;
+import com.oracle.oracle.training.services.PostUtilityService;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.extern.jbosslog.JBossLog;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @AllArgsConstructor
-@NoArgsConstructor
 @Data
 @Builder
 @Table(name = "post_feedback_tbl")
@@ -31,11 +31,15 @@ public class PostFeedBack {
     @Lob
     private byte[] commentsData;
 
-    public PostFeedBack(Integer id){
+    @Transient
+    private List<Comments> commentsList;
+
+    public PostFeedBack(){
         this.setId(id);
         this.setUpvotesCount(0);
         this.setCommentsCount(0);
         this.setLikedUserList("");
+        this.setCommentsData(new PostUtilityService().getBytes(new ArrayList<>()));
     }
 
 }

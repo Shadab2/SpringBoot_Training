@@ -9,13 +9,12 @@ import com.oracle.oracle.training.repository.PostFeedBackRepository;
 import com.oracle.oracle.training.repository.ResourcePostRepository;
 import com.oracle.oracle.training.repository.TechStackRepository;
 import com.oracle.oracle.training.repository.UserRepository;
-import com.oracle.oracle.training.utils.CommaSeperatedParser;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
+import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -28,9 +27,11 @@ public class ResourcePostServiceImp implements ResourcePostService{
     UserRepository userRepository;
     @Autowired
     TechStackRepository techStackRepository;
-
     @Autowired
     PostFeedBackRepository postFeedBackRepository;
+
+    @Autowired
+    PostUtilityService utility;
     @Override
     public ResourcePost savePost(String email, ResourcePost resourcePost, Optional<MultipartFile[]> files) {
         User user = userRepository.findByEmail(email);
@@ -67,7 +68,12 @@ public class ResourcePostServiceImp implements ResourcePostService{
         SimpleDateFormat formatter = new SimpleDateFormat("EE MMM d y H:m:s ZZZ");
         String dateString = formatter.format(new Date());
         resourcePost.setDateModified(dateString);
-        return resourcePostRepository.save(resourcePost);
+        ResourcePost post = resourcePostRepository.save(resourcePost);
+
+        PostFeedBack postFeedBack = new PostFeedBack();
+        postFeedBack.setId(post.getId());
+        resourcePost.setPostFeedBack(postFeedBack);
+        return resourcePostRepository.save(post);
     }
 
 
@@ -82,6 +88,8 @@ public class ResourcePostServiceImp implements ResourcePostService{
             for(PostImage postImage:postImages){
                 postImage.setBase64Image(new String(postImage.getImage()));
             }
+            PostFeedBack postFeedBack = resourcePost.getPostFeedBack();
+            postFeedBack.setCommentsList(utility.getComments(postFeedBack.getCommentsData()));
         }
         resourcePostList.sort((a, b) -> b.getId() - a.getId());
         return  resourcePostList;
@@ -94,34 +102,102 @@ public class ResourcePostServiceImp implements ResourcePostService{
         Optional<ResourcePost> resourcePost = resourcePostRepository.findById(postId);
         if(!resourcePost.isPresent()) throw new BadRequestException("No such post");
         ResourcePost post = resourcePost.get();
-        System.out.println(post.getPostImages().get(0).getImage());
-        if(!post.getUser().getEmail().equals(email)) throw new AccessDeniedException("Can only add in your post");
+        if(!post.getUser().getEmail().equals(email)) throw new AccessDeniedException("Can only retrieve in your post");
+        for(PostImage image:post.getPostImages()){
+            image.setBase64Image(Base64.getEncoder().encodeToString(image.getImage()));
+        }
+        PostFeedBack postFeedBack = post.getPostFeedBack();
+        postFeedBack.setCommentsList(utility.getComments(postFeedBack.getCommentsData()));
         return post;
     }
 
     @Override
-    public void upvotePost(String email, Integer postId) throws  ResourceNotFound,BadRequestException {
+    public String upvotePost(String email, Integer postId) throws  ResourceNotFound,BadRequestException {
         User user = userRepository.findByEmail(email);
         if(user==null) throw  new ResourceNotFound("No such user");
         Optional<ResourcePost> resourcePost = resourcePostRepository.findById(postId);
         if(!resourcePost.isPresent()) throw new BadRequestException("No such post");
         ResourcePost post = resourcePost.get();
         PostFeedBack postFeedBack = post.getPostFeedBack();
-        if(postFeedBack==null){
-            postFeedBack = new PostFeedBack(postId);
-            post.setPostFeedBack(postFeedBack);
-            resourcePostRepository.save(post);
+
+        postFeedBack.setCommentsList(utility.getComments(postFeedBack.getCommentsData()));
+        Set<Integer> userSet =  utility.parseStringToInteger(postFeedBack.getLikedUserList());
+        Set<Integer> postSet =  utility.parseStringToInteger(user.getLikedPostsList());
+
+        Boolean upvoted = true;
+        // downvote the post
+        if(userSet.contains(user.getId())){
+            upvoted = false;
+            postSet.remove(postId);
+            userSet.remove(user.getId());
+            postFeedBack.setUpvotesCount(postFeedBack.getUpvotesCount()-1);
+            postFeedBack.setLikedUserList(utility.parseSetToString(userSet));
+            user.setLikedPostsList(utility.parseSetToString(postSet));
         }
-        CommaSeperatedParser commaSeperatedParser = new CommaSeperatedParser();
-        Set<Integer> userSet =  commaSeperatedParser.parseStringToInteger(postFeedBack.getLikedUserList());
-        if(userSet.contains(user.getId())) throw new BadRequestException("Cannot liked an already liked post");
-        postFeedBack.setLikedUserList(postFeedBack.getLikedUserList()+user.getId()+",");
-        postFeedBack.setUpvotesCount(postFeedBack.getUpvotesCount()+1);
-        if(user.getLikedPostsList()==null) {
-            user.setLikedPostsList("");
+        else{
+            // upvote the post
+            if(user.getLikedPostsList()==null) {
+                user.setLikedPostsList("");
+            }
+            if(postFeedBack.getLikedUserList()==null){
+                postFeedBack.setLikedUserList("");
+            }
+            postFeedBack.setLikedUserList(postFeedBack.getLikedUserList()+user.getId()+",");
+            postFeedBack.setUpvotesCount(postFeedBack.getUpvotesCount()+1);
+
+            user.setLikedPostsList(user.getLikedPostsList()+post.getId()+",");
         }
-        user.setLikedPostsList(user.getLikedPostsList()+post.getId()+",");
+
         postFeedBackRepository.save(postFeedBack);
         userRepository.save(user);
+        return upvoted ? "Upvoted Succesfully" : "Downvoted Succesfully";
     }
+
+    @Override
+    public List<ResourcePost> getAllLikedPost(String email) {
+        User user = userRepository.findByEmail(email);
+        if(user==null) throw  new ResourceNotFound("No such user");
+        Set<Integer> likedPostsId = utility.parseStringToInteger(user.getLikedPostsList());
+        List<ResourcePost> resourcePostList = new ArrayList<>();
+        for(Integer id:likedPostsId){
+            Optional<ResourcePost> OptionalPost = resourcePostRepository.findById(id);
+
+            if(OptionalPost.isPresent()){
+                ResourcePost post = OptionalPost.get();
+                for(PostImage postImage:post.getPostImages()){
+                    postImage.setBase64Image(new String(postImage.getImage()));
+                }
+                resourcePostList.add(post);
+            }
+        }
+        return  resourcePostList;
+    }
+
+    @Override
+    public Comments addComment(String email, Integer postId, Comments comment) {
+        User user = userRepository.findByEmail(email);
+        if(user==null) throw  new ResourceNotFound("No such user");
+        Optional<ResourcePost> resourcePost = resourcePostRepository.findById(postId);
+        if(!resourcePost.isPresent()) throw new BadRequestException("No such post");
+
+        if(comment.getMessage().length()==0) throw  new BadRequestException("Comment cannot be empty!");
+        ResourcePost post = resourcePost.get();
+        PostFeedBack postFeedBack = post.getPostFeedBack();
+        comment.setId(postFeedBack.getCommentsCount());
+        comment.setUserId(user.getId());
+        postFeedBack.setCommentsCount(postFeedBack.getCommentsCount()+1);
+
+        List<Comments> comments = utility.getComments(postFeedBack.getCommentsData());
+        SimpleDateFormat formatter = new SimpleDateFormat("EE MMM d y H:m:s ZZZ");
+        String dateString = formatter.format(new Date());
+        comment.setDateModified(dateString);
+        comment.setUserName(user.getFirstName()+" "+user.getLastName());
+        comment.setUserProfileImage(user.getProfileImage());
+        comments.add(comment);
+        postFeedBack.setCommentsData(utility.getBytes(comments));
+
+        postFeedBackRepository.save(postFeedBack);
+        return comment;
+    }
+
 }

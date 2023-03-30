@@ -1,5 +1,6 @@
 package com.oracle.oracle.training.controllers;
 
+import com.oracle.oracle.training.entity.post.Comments;
 import com.oracle.oracle.training.entity.post.ResourcePost;
 import com.oracle.oracle.training.services.ResourcePostService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -24,6 +25,12 @@ public class PostController {
         return new ResponseEntity<>(resourcePostService.getAll(email),HttpStatus.OK);
     }
 
+    @GetMapping("all/upvoted")
+    public ResponseEntity<List<ResourcePost>> getAllUpvotedPosts(HttpServletRequest request){
+        String email = (String)request.getAttribute("email");
+        return new ResponseEntity<>(resourcePostService.getAllLikedPost(email),HttpStatus.OK);
+    }
+
     @PostMapping(consumes = {MediaType.APPLICATION_JSON_VALUE,MediaType.MULTIPART_FORM_DATA_VALUE})
     public ResponseEntity<ResourcePost> savePost(HttpServletRequest request, @RequestPart ResourcePost resourcePost,@RequestPart("files") Optional<MultipartFile[]> files){
         String email = (String)request.getAttribute("email");
@@ -39,7 +46,12 @@ public class PostController {
     @PostMapping("/{postId}/upvote")
     public ResponseEntity<String> upvotePost(HttpServletRequest request,@PathVariable("postId") Integer postId){
         String email = (String)request.getAttribute("email");
-        resourcePostService.upvotePost(email,postId);
-        return new ResponseEntity<>("post upvoted successfully",HttpStatus.OK);
+        return new ResponseEntity<>(resourcePostService.upvotePost(email,postId),HttpStatus.OK);
+    }
+
+    @PostMapping("/{postId}/comment")
+    public ResponseEntity<Comments> addComment(HttpServletRequest request, @PathVariable("postId") Integer postId, @RequestBody Comments comment){
+        String email = (String)request.getAttribute("email");
+        return new ResponseEntity<>(resourcePostService.addComment(email,postId,comment),HttpStatus.OK);
     }
 }

@@ -1,5 +1,6 @@
 package com.oracle.oracle.training.services;
 
+import com.oracle.oracle.training.entity.post.Comments;
 import com.oracle.oracle.training.entity.post.ResourcePost;
 import com.oracle.oracle.training.exceptions.AccessDeniedException;
 import com.oracle.oracle.training.exceptions.ResourceNotFound;
@@ -15,5 +16,9 @@ public interface ResourcePostService {
 
     ResourcePost getPost(String email, Integer postId);
 
-    void upvotePost(String email,Integer postId);
+    String upvotePost(String email,Integer postId);
+
+    List<ResourcePost> getAllLikedPost(String email);
+
+    Comments addComment(String email, Integer postId, Comments comment);
 }
