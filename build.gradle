@@ -27,7 +27,7 @@ repositories {
 task genJaxb {
     ext.sourcesDir = "${projectDir}/src/main/java/generated-sources/"
     ext.classesDir = "${buildDir}/classes/jaxb"
-    ext.schema = "${projectDir}/src/main/resources/wsdl/numberConversion.wsdl"
+    ext.schema = "${projectDir}/src/main/resources/wsdl/TemparatureConversion.wsdl"
 
     outputs.dir classesDir
 
@@ -74,6 +74,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-mail'
 
     implementation 'io.jsonwebtoken:jjwt:0.9.1'
+    implementation 'org.json:json:20220924'
 
     // for Soap and JAXB java classes generation
     implementation ('org.springframework.boot:spring-boot-starter-web-services') {
@@ -89,6 +90,9 @@ dependencies {
     implementation 'jakarta.xml.bind:jakarta.xml.bind-api:4.0.0' // In JAXB v3, 'javax.xml.bind' was moved to 'jakarta.xml.bind'
 
     implementation 'javax.xml.bind:jaxb-api:2.2.4'
+
+    // excel
+    implementation 'org.apache.poi:poi-ooxml:4.1.2'
 }
 
 

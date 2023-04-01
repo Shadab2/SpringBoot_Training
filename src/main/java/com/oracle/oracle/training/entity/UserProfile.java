@@ -1,16 +1,20 @@
 package com.oracle.oracle.training.entity;
 
+import com.oracle.oracle.training.model.UserProfileAddress;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Table(
         name = "user_profile_tbl",
         uniqueConstraints = @UniqueConstraint(
-                name = "id",
-                columnNames = "id"
+                name = "username_unique",
+                columnNames = "username"
         )
 )
 @NoArgsConstructor
@@ -19,17 +23,18 @@ import lombok.NoArgsConstructor;
 public class UserProfile {
 
     @Id
-    private Long id;
+    private Integer id;
     private String name;
     private String username;
     private String email;
 
-    @Embedded
-    private Address address;
 
+    @Embedded
+    private UserProfileAddress address;
     private String phone;
     private String website;
-    @Embedded
-    private Company company;
 
+    @OneToMany(cascade = CascadeType.ALL)
+    @JoinColumn(name = "pc_fid", referencedColumnName = "id")
+    private List<Company> companies = new ArrayList<>();
 }

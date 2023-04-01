@@ -1,6 +1,9 @@
 package com.oracle.oracle.training.dto;
 
+import com.oracle.oracle.training.entity.Address;
 import lombok.*;
+
+import java.util.List;
 
 @Builder
 @NoArgsConstructor
@@ -15,4 +18,5 @@ public class UserDto {
     private String profileImage;
     private Integer role;
     private String token;
+    private List<Address> addressList;
 }

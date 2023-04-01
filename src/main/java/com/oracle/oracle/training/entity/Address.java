@@ -1,20 +1,33 @@
 package com.oracle.oracle.training.entity;
 
-import jakarta.persistence.Embeddable;
-import jakarta.persistence.Embedded;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Embeddable
+import java.util.Date;
+
+@Entity
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
+@Builder
+@Table( name = "address_tbl")
 public class Address {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
+
+    @Column( nullable = false)
     private String street;
-    private String suite;
+
+    @Column( nullable = false)
     private String city;
-    private String zipcode;
-    @Embedded
-    private Geo geo;
+    @Column( nullable = false)
+    private String state;
+    @Column( nullable = false)
+    private String country;
+
+    private Date dateCreated;
 }

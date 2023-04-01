@@ -1,10 +1,19 @@
 package com.oracle.oracle.training.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.oracle.oracle.training.entity.post.ResourcePost;
 import jakarta.persistence.*;
-import lombok.RequiredArgsConstructor;
-import lombok.ToString;
+import lombok.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 @Table(
         name = "user_tbl",
         uniqueConstraints = @UniqueConstraint(
@@ -27,90 +36,33 @@ public class User {
     private String lastName;
 
     @Column( nullable = false)
+    @JsonIgnore
     private String password;
 
     @Column( nullable = false)
     private String mobileNo;
+
 
     @Lob
     private String profileImage;
 
     private Integer role;
 
-    public int getRole() {
-        return role;
-    }
+    @OneToMany(cascade = CascadeType.ALL ,fetch = FetchType.EAGER,orphanRemoval = true)
+    @JoinColumn(name = "pc_fid", referencedColumnName = "id")
+    private List<Address> addresses = new ArrayList<>();
 
-    public void setRole(int role) {
-        this.role = role;
-    }
+    @JsonIgnore
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "user",cascade = CascadeType.ALL)
+    private List<ResourcePost> resourcePostList;
 
-    public String getProfileImage() {
-        return profileImage;
-    }
+    //contains comma seperated ids of the liked posts and saved posts
+    @Column(length = 500)
+    private String likedPostsList;
 
-    public void setProfileImage(String profileImage) {
-        this.profileImage = profileImage;
-    }
+    @Column(length = 500)
+    private String savedPostsList;
 
-    public User() {
-    }
-
-    public User(String email, String firstName, String lastName, String password, String mobileNo) {
-        this.email = email;
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.password = password;
-        this.mobileNo = mobileNo;
-    }
-
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getFirstName() {
-        return firstName;
-    }
-
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
-
-    public String getLastName() {
-        return lastName;
-    }
-
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public String getMobileNo() {
-        return mobileNo;
-    }
-
-    public void setMobileNo(String mobileNo) {
-        this.mobileNo = mobileNo;
-    }
 
     @Override
     public String toString(){

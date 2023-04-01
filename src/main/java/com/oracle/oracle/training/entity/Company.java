@@ -1,25 +1,29 @@
 package com.oracle.oracle.training.entity;
 
-import jakarta.persistence.AttributeOverride;
-import jakarta.persistence.AttributeOverrides;
-import jakarta.persistence.Column;
-import jakarta.persistence.Embeddable;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Embeddable
+import java.util.HashSet;
+import java.util.Set;
+
+@Entity
+@Table (name = "company_tbl", uniqueConstraints = @UniqueConstraint(
+        name = "unique_name",
+        columnNames = "name"
+))
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@AttributeOverrides({
-        @AttributeOverride(
-                name = "name",
-                column = @Column(name = "company_name")
-        )}
-)
 public class Company {
+    @Column(name = "company_id")
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer companyId;
     private String name;
     private String catchPhrase;
     private String  bs;
+
 }

@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.filter.GenericFilterBean;
 
 import java.io.IOException;
+import java.util.Enumeration;
 
 import static com.oracle.oracle.training.constants.Constants.API_SECRET_KEY;
 
@@ -24,7 +25,7 @@ public class AuthFilter extends GenericFilterBean {
         HttpServletResponse res = (HttpServletResponse) response;
         String authHeader = req.getHeader("Authorization");
         if(authHeader!=null){
-            String[] authHeaderArr= authHeader.split("Bearer ");
+            String[] authHeaderArr = authHeader.split("Bearer ");
             if(authHeaderArr.length > 1 && authHeaderArr[1]!=null){
                 String token = authHeaderArr[1];
                 try{
@@ -43,7 +44,7 @@ public class AuthFilter extends GenericFilterBean {
             }
         }else {
             log.error("Authorization Header is missing!");
-            res.sendError(res.SC_FORBIDDEN,"Unauthorized");
+            res.sendError(res.SC_ACCEPTED,"Unauthorized");
             return;
         }
         chain.doFilter(request,response);

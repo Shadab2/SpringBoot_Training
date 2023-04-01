@@ -2,6 +2,7 @@ package com.oracle.oracle.training.services;
 
 import com.oracle.oracle.training.dto.UserDto;
 import com.oracle.oracle.training.dto.UserPublicDto;
+import com.oracle.oracle.training.entity.Address;
 import com.oracle.oracle.training.entity.User;
 import com.oracle.oracle.training.exceptions.AccessDeniedException;
 import com.oracle.oracle.training.exceptions.BadRequestException;
@@ -21,4 +22,7 @@ public interface UserService {
 
     List<UserPublicDto> findAllRegisteredUsers(String email) throws AccessDeniedException;
 
+    List<Address> addAddress(String email, Address address);
+
+    boolean deleteAddress(String email, Integer addressId);
 }

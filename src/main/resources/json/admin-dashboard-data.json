@@ -1,0 +1,128 @@
+{
+  "dashboard": {
+    "name": "Product Dashboard",
+    "date": "2023-03-22"
+  },
+  "products": [
+    {
+      "id": 1,
+      "name": "Product 1",
+      "description": "This is a description of Product 1.",
+      "price": 19.99,
+      "sales": [
+        {
+          "date": "2023-03-01",
+          "quantity": 100,
+          "revenue": 1999.0
+        },
+        {
+          "date": "2023-03-15",
+          "quantity": 50,
+          "revenue": 999.5
+        }
+      ],
+      "total_sales": 150,
+      "total_revenue": 2998.5
+    },
+    {
+      "id": 2,
+      "name": "Product 2",
+      "description": "This is a description of Product 2.",
+      "price": 29.99,
+      "sales": [
+        {
+          "date": "2023-03-02",
+          "quantity": 75,
+          "revenue": 2249.25
+        },
+        {
+          "date": "2023-03-16",
+          "quantity": 25,
+          "revenue": 749.75
+        }
+      ],
+      "total_sales": 100,
+      "total_revenue": 2999.0
+    },
+    {
+      "id": 3,
+      "name": "Product 3",
+      "description": "This is a description of Product 3.",
+      "price": 9.99,
+      "sales": [
+        {
+          "date": "2023-03-05",
+          "quantity": 200,
+          "revenue": 1998.0
+        },
+        {
+          "date": "2023-03-20",
+          "quantity": 100,
+          "revenue": 999.0
+        }
+      ],
+      "total_sales": 300,
+      "total_revenue": 2997.0
+    },
+    {
+      "id": 4,
+      "name": "Product 4",
+      "description": "This is a description of Product 4.",
+      "price": 39.99,
+      "sales": [
+        {
+          "date": "2023-03-03",
+          "quantity": 50,
+          "revenue": 1999.5
+        },
+        {
+          "date": "2023-03-18",
+          "quantity": 25,
+          "revenue": 999.75
+        }
+      ],
+      "total_sales": 75,
+      "total_revenue": 2999.25
+    },
+    {
+      "id": 5,
+      "name": "Product 5",
+      "description": "This is a description of Product 5.",
+      "price": 49.99,
+      "sales": [
+        {
+          "date": "2023-03-04",
+          "quantity": 100,
+          "revenue": 4999.0
+        },
+        {
+          "date": "2023-03-19",
+          "quantity": 75,
+          "revenue": 3749.25
+        }
+      ],
+      "total_sales": 175,
+      "total_revenue": 8748.25
+    },
+    {
+      "id": 6,
+      "name": "Product 6",
+      "description": "This is a description of Product 6.",
+      "price": 59.99,
+      "sales": [
+        {
+          "date": "2023-03-07",
+          "quantity": 150,
+          "revenue": 8998.5
+        },
+        {
+          "date": "2023-03-22",
+          "quantity": 100,
+          "revenue": 5999.0
+        }
+      ],
+      "total_sales": 250,
+      "total_revenue": 14997.5
+    }
+  ]
+}
