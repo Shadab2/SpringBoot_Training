@@ -5,10 +5,7 @@ import com.oracle.oracle.training.entity.User;
 import com.oracle.oracle.training.exceptions.AccessDeniedException;
 import com.oracle.oracle.training.exceptions.BadRequestException;
 import com.oracle.oracle.training.exceptions.ResourceNotFound;
-import com.oracle.oracle.training.repository.PostFeedBackRepository;
-import com.oracle.oracle.training.repository.ResourcePostRepository;
-import com.oracle.oracle.training.repository.TechStackRepository;
-import com.oracle.oracle.training.repository.UserRepository;
+import com.oracle.oracle.training.repository.*;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -29,6 +26,9 @@ public class ResourcePostServiceImp implements ResourcePostService{
     TechStackRepository techStackRepository;
     @Autowired
     PostFeedBackRepository postFeedBackRepository;
+
+    @Autowired
+    PostImageRepository postImageRepository;
 
     @Autowired
     PostUtilityService utility;
@@ -68,12 +68,8 @@ public class ResourcePostServiceImp implements ResourcePostService{
         SimpleDateFormat formatter = new SimpleDateFormat("EE MMM d y H:m:s ZZZ");
         String dateString = formatter.format(new Date());
         resourcePost.setDateModified(dateString);
-        ResourcePost post = resourcePostRepository.save(resourcePost);
-
-        PostFeedBack postFeedBack = new PostFeedBack();
-        postFeedBack.setId(post.getId());
-        resourcePost.setPostFeedBack(postFeedBack);
-        return resourcePostRepository.save(post);
+        resourcePost.setPostFeedBack(new PostFeedBack());
+        return resourcePostRepository.save(resourcePost);
     }
 
 
@@ -82,15 +78,7 @@ public class ResourcePostServiceImp implements ResourcePostService{
         User user = userRepository.findByEmail(email);
         if(user==null) throw  new ResourceNotFound("No such user");
         List<ResourcePost> resourcePostList =  resourcePostRepository.findByAccessLevel("PUBLIC");
-        // convert blob to base64
-        for(ResourcePost resourcePost:resourcePostList){
-            List<PostImage> postImages = resourcePost.getPostImages();
-            for(PostImage postImage:postImages){
-                postImage.setBase64Image(new String(postImage.getImage()));
-            }
-            PostFeedBack postFeedBack = resourcePost.getPostFeedBack();
-            postFeedBack.setCommentsList(utility.getComments(postFeedBack.getCommentsData()));
-        }
+        parsePosts(resourcePostList);
         resourcePostList.sort((a, b) -> b.getId() - a.getId());
         return  resourcePostList;
     }
@@ -103,11 +91,7 @@ public class ResourcePostServiceImp implements ResourcePostService{
         if(!resourcePost.isPresent()) throw new BadRequestException("No such post");
         ResourcePost post = resourcePost.get();
         if(!post.getUser().getEmail().equals(email)) throw new AccessDeniedException("Can only retrieve in your post");
-        for(PostImage image:post.getPostImages()){
-            image.setBase64Image(Base64.getEncoder().encodeToString(image.getImage()));
-        }
-        PostFeedBack postFeedBack = post.getPostFeedBack();
-        postFeedBack.setCommentsList(utility.getComments(postFeedBack.getCommentsData()));
+        parseIndividualPost(post);
         return post;
     }
 
@@ -164,9 +148,7 @@ public class ResourcePostServiceImp implements ResourcePostService{
 
             if(OptionalPost.isPresent()){
                 ResourcePost post = OptionalPost.get();
-                for(PostImage postImage:post.getPostImages()){
-                    postImage.setBase64Image(new String(postImage.getImage()));
-                }
+                parseIndividualPost(post);
                 resourcePostList.add(post);
             }
         }
@@ -199,5 +181,81 @@ public class ResourcePostServiceImp implements ResourcePostService{
         postFeedBackRepository.save(postFeedBack);
         return comment;
     }
+
+    @Override
+    public List<ResourcePost> getTrendingPosts(String email) {
+        User user = userRepository.findByEmail(email);
+        if(user==null) throw  new ResourceNotFound("No such user");
+        List<ResourcePost> allPosts = getAll(email);
+        allPosts.sort((o1, o2) -> {
+            PostFeedBack postFeedBack1 = o1.getPostFeedBack();
+            PostFeedBack postFeedBack2 = o2.getPostFeedBack();
+            Integer engagement1 = postFeedBack1.getCommentsCount() * 10  + postFeedBack1.getUpvotesCount() * 20;
+            Integer engagement2 = postFeedBack2.getCommentsCount() * 10  + postFeedBack2.getUpvotesCount() * 20;
+            return engagement2 - engagement1;
+        });
+        List<ResourcePost> resourcePostList= allPosts.subList(0,Math.min(allPosts.size(),5));
+        parsePosts(resourcePostList);
+        return  resourcePostList;
+    }
+
+    @Override
+    public List<ResourcePost> getAllUserPost(String email) {
+        User user = userRepository.findByEmail(email);
+        if(user==null) throw  new ResourceNotFound("No such user");
+        List<ResourcePost> resourcePostList = user.getResourcePostList();
+        parsePosts(resourcePostList);
+        return resourcePostList;
+    }
+
+    @Override
+    public List<ResourcePost> search(String email, Map<String, Object> requestMap) {
+        User user = userRepository.findByEmail(email);
+        if(user==null) throw  new ResourceNotFound("No such user");
+        Map<Integer,ResourcePost> map = new HashMap<>();
+        List<ResourcePost> resourcePostList = null;
+        if(requestMap.containsKey("tech")){
+           TechStack techStack = techStackRepository.findByNameIgnoreCase((String)requestMap.get("tech"));
+           if(techStack!=null){
+               resourcePostList = techStack.getResourcePostList();
+               for(ResourcePost post:resourcePostList) map.putIfAbsent(post.getId(),post);
+           }
+        }
+        if(requestMap.containsKey("title")){
+            resourcePostList =  resourcePostRepository.findByAccessLevelAndTitleIgnoreCaseContaining("PUBLIC",(String)requestMap.get("title"));
+            for(ResourcePost post:resourcePostList) map.putIfAbsent(post.getId(),post);
+        }
+        List<ResourcePost> posts = new ArrayList<>(map.values());
+        parsePosts(posts);
+        return posts;
+    }
+
+    @Override
+    public List<PostImage> getAllImages(String email) {
+        User user = userRepository.findByEmail(email);
+        if(user==null) throw  new ResourceNotFound("No such user");
+        List<PostImage> postImages = postImageRepository.findAll();
+        for(PostImage postImage:postImages){
+            postImage.setBase64Image(new String(postImage.getImage()));
+        }
+        return postImages;
+    }
+
+    private void parsePosts(List<ResourcePost> resourcePostList){
+        for(ResourcePost resourcePost:resourcePostList){
+            parseIndividualPost(resourcePost);
+        }
+    }
+
+    private void parseIndividualPost(ResourcePost resourcePost){
+        List<PostImage> postImages = resourcePost.getPostImages();
+        // convert blob to base64
+        for(PostImage postImage:postImages){
+            postImage.setBase64Image(new String(postImage.getImage()));
+        }
+        PostFeedBack postFeedBack = resourcePost.getPostFeedBack();
+        postFeedBack.setCommentsList(utility.getComments(postFeedBack.getCommentsData()));
+    }
+
 
 }

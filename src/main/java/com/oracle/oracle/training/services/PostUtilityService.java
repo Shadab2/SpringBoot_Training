@@ -21,7 +21,7 @@ public class PostUtilityService {
         return dataSet;
     }
 
-    public static String parseSetToString(Set<Integer> set){
+    public  String parseSetToString(Set<Integer> set){
         StringBuilder sb =new StringBuilder();
         for(Integer x:set){
             sb.append(x).append(',');

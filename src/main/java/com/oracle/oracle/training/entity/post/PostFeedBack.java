@@ -19,6 +19,7 @@ import java.util.List;
 @Table(name = "post_feedback_tbl")
 public class PostFeedBack {
     @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
     Integer id;
 
     private Integer upvotesCount;
@@ -35,7 +36,6 @@ public class PostFeedBack {
     private List<Comments> commentsList;
 
     public PostFeedBack(){
-        this.setId(id);
         this.setUpvotesCount(0);
         this.setCommentsCount(0);
         this.setLikedUserList("");

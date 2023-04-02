@@ -10,4 +10,6 @@ import java.util.List;
 @Repository
 public interface ResourcePostRepository extends JpaRepository<ResourcePost,Integer> {
    List<ResourcePost> findByAccessLevel(String accessLevel);
+
+   List<ResourcePost> findByAccessLevelAndTitleIgnoreCaseContaining(String Accesslevel,String title);
 }

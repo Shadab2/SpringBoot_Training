@@ -1,12 +1,14 @@
 package com.oracle.oracle.training.services;
 
 import com.oracle.oracle.training.entity.post.Comments;
+import com.oracle.oracle.training.entity.post.PostImage;
 import com.oracle.oracle.training.entity.post.ResourcePost;
 import com.oracle.oracle.training.exceptions.AccessDeniedException;
 import com.oracle.oracle.training.exceptions.ResourceNotFound;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public interface ResourcePostService {
@@ -21,4 +23,13 @@ public interface ResourcePostService {
     List<ResourcePost> getAllLikedPost(String email);
 
     Comments addComment(String email, Integer postId, Comments comment);
+
+    List<ResourcePost> getTrendingPosts(String email);
+
+    List<ResourcePost> getAllUserPost(String email);
+
+    List<ResourcePost> search(String email, Map<String, Object> requestMap);
+
+    List<PostImage> getAllImages(String email);
+
 }
