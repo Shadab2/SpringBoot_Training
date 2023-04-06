@@ -93,6 +93,8 @@ dependencies {
 
     // excel
     implementation 'org.apache.poi:poi-ooxml:4.1.2'
+    //websocket
+    implementation 'org.springframework.boot:spring-boot-starter-websocket'
 }
 
 

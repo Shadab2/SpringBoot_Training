@@ -1,4 +1,4 @@
-package com.oracle.oracle.training.services;
+package com.oracle.oracle.training.services.interfaces;
 
 import com.oracle.oracle.training.dto.UserDto;
 import com.oracle.oracle.training.dto.UserPublicDto;

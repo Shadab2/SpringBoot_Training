@@ -1,4 +1,4 @@
-package com.oracle.oracle.training.services;
+package com.oracle.oracle.training.services.functional;
 
 import com.oracle.oracle.training.model.UserProfileAddress;
 import com.oracle.oracle.training.entity.Company;

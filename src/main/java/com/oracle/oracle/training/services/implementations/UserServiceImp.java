@@ -1,4 +1,4 @@
-package com.oracle.oracle.training.services;
+package com.oracle.oracle.training.services.implementations;
 
 import com.oracle.oracle.training.dto.UserDto;
 import com.oracle.oracle.training.dto.UserPublicDto;
@@ -8,6 +8,8 @@ import com.oracle.oracle.training.exceptions.AccessDeniedException;
 import com.oracle.oracle.training.exceptions.BadRequestException;
 import com.oracle.oracle.training.exceptions.ResourceNotFound;
 import com.oracle.oracle.training.repository.UserRepository;
+import com.oracle.oracle.training.services.functional.AuthService;
+import com.oracle.oracle.training.services.interfaces.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

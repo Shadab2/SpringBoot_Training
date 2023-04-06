@@ -1,9 +1,8 @@
 package com.oracle.oracle.training.controllers;
 
-import com.oracle.oracle.training.dto.UserPublicDto;
 import com.oracle.oracle.training.entity.Address;
 import com.oracle.oracle.training.entity.User;
-import com.oracle.oracle.training.services.UserService;
+import com.oracle.oracle.training.services.interfaces.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
