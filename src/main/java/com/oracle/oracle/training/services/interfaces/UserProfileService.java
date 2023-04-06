@@ -1,4 +1,4 @@
-package com.oracle.oracle.training.services;
+package com.oracle.oracle.training.services.interfaces;
 
 import com.oracle.oracle.training.entity.Company;
 import com.oracle.oracle.training.entity.UserProfile;

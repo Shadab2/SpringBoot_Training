@@ -1,11 +1,8 @@
 package com.oracle.oracle.training.controllers;
 
 import com.oracle.oracle.training.dto.UserPublicDto;
-import com.oracle.oracle.training.entity.UserProfile;
-import com.oracle.oracle.training.services.AdminService;
-import com.oracle.oracle.training.services.UserProfileService;
-import com.oracle.oracle.training.services.UserProfileServiceImp;
-import com.oracle.oracle.training.services.UserService;
+import com.oracle.oracle.training.services.functional.AdminService;
+import com.oracle.oracle.training.services.interfaces.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

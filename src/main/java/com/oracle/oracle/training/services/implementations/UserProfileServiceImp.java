@@ -1,4 +1,4 @@
-package com.oracle.oracle.training.services;
+package com.oracle.oracle.training.services.implementations;
 
 import com.oracle.oracle.training.consumingwebservice.rest.FetchUserClient;
 import com.oracle.oracle.training.entity.*;
@@ -11,6 +11,10 @@ import com.oracle.oracle.training.model.Geo;
 import com.oracle.oracle.training.model.UserProfileAddress;
 import com.oracle.oracle.training.repository.CompanyRepository;
 import com.oracle.oracle.training.repository.UserProfileRepository;
+import com.oracle.oracle.training.services.functional.ExcelService;
+import com.oracle.oracle.training.services.functional.JSONParseService;
+import com.oracle.oracle.training.services.functional.XMLParseService;
+import com.oracle.oracle.training.services.interfaces.UserProfileService;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -24,7 +28,7 @@ import java.util.*;
 
 @Service
 @Transactional
-public class UserProfileServiceImp implements UserProfileService{
+public class UserProfileServiceImp implements UserProfileService {
     @Autowired
     UserProfileRepository userProfileRepository;
     @Autowired

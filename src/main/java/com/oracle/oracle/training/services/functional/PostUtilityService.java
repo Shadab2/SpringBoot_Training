@@ -1,13 +1,11 @@
-package com.oracle.oracle.training.services;
+package com.oracle.oracle.training.services.functional;
 
 import com.oracle.oracle.training.entity.post.Comments;
 import org.springframework.stereotype.Component;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 @Component
 public class PostUtilityService {
@@ -57,5 +55,10 @@ public class PostUtilityService {
             e.printStackTrace();
         }
         return list;
+    }
+    public String getDate(){
+        SimpleDateFormat formatter = new SimpleDateFormat("EE MMM d y H:m:s ZZZ");
+        String dateString = formatter.format(new Date());
+        return dateString;
     }
 }

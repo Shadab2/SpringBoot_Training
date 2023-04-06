@@ -1,14 +1,12 @@
 package com.oracle.oracle.training.entity.post;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.oracle.oracle.training.services.PostUtilityService;
+import com.oracle.oracle.training.services.functional.PostUtilityService;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 

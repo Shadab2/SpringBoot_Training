@@ -1,4 +1,4 @@
-package com.oracle.oracle.training.services;
+package com.oracle.oracle.training.services.functional;
 
 import com.oracle.oracle.training.entity.User;
 import io.jsonwebtoken.Jwts;

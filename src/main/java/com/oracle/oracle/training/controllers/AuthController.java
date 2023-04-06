@@ -2,8 +2,8 @@ package com.oracle.oracle.training.controllers;
 
 import com.oracle.oracle.training.dto.UserDto;
 import com.oracle.oracle.training.entity.User;
-import com.oracle.oracle.training.services.CaptchaService;
-import com.oracle.oracle.training.services.UserService;
+import com.oracle.oracle.training.services.functional.CaptchaService;
+import com.oracle.oracle.training.services.interfaces.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

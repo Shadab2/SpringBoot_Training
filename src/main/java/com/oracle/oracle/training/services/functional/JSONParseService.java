@@ -1,4 +1,4 @@
-package com.oracle.oracle.training.services;
+package com.oracle.oracle.training.services.functional;
 
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONException;

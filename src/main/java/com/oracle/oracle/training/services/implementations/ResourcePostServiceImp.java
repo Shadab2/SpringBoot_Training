@@ -1,13 +1,18 @@
-package com.oracle.oracle.training.services;
+package com.oracle.oracle.training.services.implementations;
 
+import com.oracle.oracle.training.entity.NotificationType;
+import com.oracle.oracle.training.entity.Notificaton;
 import com.oracle.oracle.training.entity.post.*;
 import com.oracle.oracle.training.entity.User;
 import com.oracle.oracle.training.exceptions.AccessDeniedException;
 import com.oracle.oracle.training.exceptions.BadRequestException;
 import com.oracle.oracle.training.exceptions.ResourceNotFound;
 import com.oracle.oracle.training.repository.*;
+import com.oracle.oracle.training.services.functional.PostUtilityService;
+import com.oracle.oracle.training.services.interfaces.ResourcePostService;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -17,24 +22,28 @@ import java.util.*;
 
 @Service
 @Transactional
-public class ResourcePostServiceImp implements ResourcePostService{
+public class ResourcePostServiceImp implements ResourcePostService {
     @Autowired
-    ResourcePostRepository resourcePostRepository;
+    private ResourcePostRepository resourcePostRepository;
     @Autowired
-    UserRepository userRepository;
+    private UserRepository userRepository;
     @Autowired
-    TechStackRepository techStackRepository;
+    private TechStackRepository techStackRepository;
     @Autowired
-    PostFeedBackRepository postFeedBackRepository;
+    private PostFeedBackRepository postFeedBackRepository;
 
     @Autowired
-    PostImageRepository postImageRepository;
+    private PostImageRepository postImageRepository;
 
     @Autowired
-    PostUtilityService utility;
+    private PostUtilityService utility;
+
+    @Autowired
+    private SimpMessagingTemplate simpMessagingTemplate;
+
     @Override
     public ResourcePost savePost(String email, ResourcePost resourcePost, Optional<MultipartFile[]> files) {
-        User user = userRepository.findByEmail(email);
+        User user = getUser(email);
         List<TechStack> techStackList = resourcePost.getTechStacks();
         List<TechStack> savedStackList = new ArrayList<>();
         for(TechStack t: techStackList){
@@ -75,8 +84,7 @@ public class ResourcePostServiceImp implements ResourcePostService{
 
     @Override
     public List<ResourcePost> getAll(String email) throws ResourceNotFound {
-        User user = userRepository.findByEmail(email);
-        if(user==null) throw  new ResourceNotFound("No such user");
+        User user = getUser(email);
         List<ResourcePost> resourcePostList =  resourcePostRepository.findByAccessLevel("PUBLIC");
         parsePosts(resourcePostList);
         resourcePostList.sort((a, b) -> b.getId() - a.getId());
@@ -85,11 +93,8 @@ public class ResourcePostServiceImp implements ResourcePostService{
 
     @Override
     public ResourcePost getPost(String email, Integer postId) throws ResourceNotFound {
-        User user = userRepository.findByEmail(email);
-        if(user==null) throw  new ResourceNotFound("No such user");
-        Optional<ResourcePost> resourcePost = resourcePostRepository.findById(postId);
-        if(!resourcePost.isPresent()) throw new BadRequestException("No such post");
-        ResourcePost post = resourcePost.get();
+        User user = getUser(email);
+        ResourcePost post = getPost(postId);
         if(!post.getUser().getEmail().equals(email)) throw new AccessDeniedException("Can only retrieve in your post");
         parseIndividualPost(post);
         return post;
@@ -97,11 +102,8 @@ public class ResourcePostServiceImp implements ResourcePostService{
 
     @Override
     public String upvotePost(String email, Integer postId) throws  ResourceNotFound,BadRequestException {
-        User user = userRepository.findByEmail(email);
-        if(user==null) throw  new ResourceNotFound("No such user");
-        Optional<ResourcePost> resourcePost = resourcePostRepository.findById(postId);
-        if(!resourcePost.isPresent()) throw new BadRequestException("No such post");
-        ResourcePost post = resourcePost.get();
+        User user = getUser(email);
+        ResourcePost post = getPost(postId);
         PostFeedBack postFeedBack = post.getPostFeedBack();
 
         postFeedBack.setCommentsList(utility.getComments(postFeedBack.getCommentsData()));
@@ -130,17 +132,28 @@ public class ResourcePostServiceImp implements ResourcePostService{
             postFeedBack.setUpvotesCount(postFeedBack.getUpvotesCount()+1);
 
             user.setLikedPostsList(user.getLikedPostsList()+post.getId()+",");
-        }
 
+        }
         postFeedBackRepository.save(postFeedBack);
         userRepository.save(user);
+        if(upvoted){
+            Notificaton notificaton = Notificaton.builder()
+                    .message("Upvoted the post")
+                    .dateCreated(utility.getDate())
+                    .type(NotificationType.UPVOTED)
+                    .senderEmail(user.getEmail())
+                    .senderName(user.getFirstName()+" "+user.getLastName())
+                    .postTitle(post.getTitle())
+                    .profileImage(user.getProfileImage())
+                    .build();
+            simpMessagingTemplate.convertAndSend("/global/notification/"+post.getUser().getEmail(),notificaton);
+        }
         return upvoted ? "Upvoted Succesfully" : "Downvoted Succesfully";
     }
 
     @Override
     public List<ResourcePost> getAllLikedPost(String email) {
-        User user = userRepository.findByEmail(email);
-        if(user==null) throw  new ResourceNotFound("No such user");
+        User user = getUser(email);
         Set<Integer> likedPostsId = utility.parseStringToInteger(user.getLikedPostsList());
         List<ResourcePost> resourcePostList = new ArrayList<>();
         for(Integer id:likedPostsId){
@@ -157,13 +170,10 @@ public class ResourcePostServiceImp implements ResourcePostService{
 
     @Override
     public Comments addComment(String email, Integer postId, Comments comment) {
-        User user = userRepository.findByEmail(email);
-        if(user==null) throw  new ResourceNotFound("No such user");
-        Optional<ResourcePost> resourcePost = resourcePostRepository.findById(postId);
-        if(!resourcePost.isPresent()) throw new BadRequestException("No such post");
+        User user = getUser(email);
+        ResourcePost post = getPost(postId);
 
         if(comment.getMessage().length()==0) throw  new BadRequestException("Comment cannot be empty!");
-        ResourcePost post = resourcePost.get();
         PostFeedBack postFeedBack = post.getPostFeedBack();
         comment.setId(postFeedBack.getCommentsCount());
         comment.setUserId(user.getId());
@@ -179,13 +189,23 @@ public class ResourcePostServiceImp implements ResourcePostService{
         postFeedBack.setCommentsData(utility.getBytes(comments));
 
         postFeedBackRepository.save(postFeedBack);
+        Notificaton notificaton = Notificaton.builder()
+                .message("commented the post")
+                .dateCreated(utility.getDate())
+                .type(NotificationType.COMMENTED)
+                .content("'"+comment.getMessage()+"'")
+                .senderEmail(user.getEmail())
+                .postTitle(post.getTitle())
+                .senderName(user.getFirstName()+" "+user.getLastName())
+                .profileImage(user.getProfileImage())
+                .build();
+        simpMessagingTemplate.convertAndSend("/global/notification/"+post.getUser().getEmail(),notificaton);
         return comment;
     }
 
     @Override
     public List<ResourcePost> getTrendingPosts(String email) {
-        User user = userRepository.findByEmail(email);
-        if(user==null) throw  new ResourceNotFound("No such user");
+        User user = getUser(email);
         List<ResourcePost> allPosts = getAll(email);
         allPosts.sort((o1, o2) -> {
             PostFeedBack postFeedBack1 = o1.getPostFeedBack();
@@ -201,8 +221,7 @@ public class ResourcePostServiceImp implements ResourcePostService{
 
     @Override
     public List<ResourcePost> getAllUserPost(String email) {
-        User user = userRepository.findByEmail(email);
-        if(user==null) throw  new ResourceNotFound("No such user");
+         User user = getUser(email);
         List<ResourcePost> resourcePostList = user.getResourcePostList();
         parsePosts(resourcePostList);
         return resourcePostList;
@@ -210,8 +229,7 @@ public class ResourcePostServiceImp implements ResourcePostService{
 
     @Override
     public List<ResourcePost> search(String email, Map<String, Object> requestMap) {
-        User user = userRepository.findByEmail(email);
-        if(user==null) throw  new ResourceNotFound("No such user");
+        User user = getUser(email);
         Map<Integer,ResourcePost> map = new HashMap<>();
         List<ResourcePost> resourcePostList = null;
         if(requestMap.containsKey("tech")){
@@ -232,8 +250,7 @@ public class ResourcePostServiceImp implements ResourcePostService{
 
     @Override
     public List<PostImage> getAllImages(String email) {
-        User user = userRepository.findByEmail(email);
-        if(user==null) throw  new ResourceNotFound("No such user");
+        User user = getUser(email);
         List<PostImage> postImages = postImageRepository.findAll();
         for(PostImage postImage:postImages){
             postImage.setBase64Image(new String(postImage.getImage()));
@@ -241,12 +258,66 @@ public class ResourcePostServiceImp implements ResourcePostService{
         return postImages;
     }
 
+    @Override
+    public List<ResourcePost> getAllUserSavedPost(String email) {
+        User user = getUser(email);
+        List<ResourcePost> resourcePostList = new ArrayList<>();
+        Set<Integer> set = utility.parseStringToInteger(user.getSavedPostsList());
+        for(Integer postId:set){
+            ResourcePost post = resourcePostRepository.findById(postId).get();
+            parseIndividualPost(post);
+            resourcePostList.add(post);
+        }
+        return resourcePostList;
+    }
+
+    @Override
+    public Map<String, Set<Integer>> getUserMappings(String email) {
+       User user = getUser(email);
+       if(user.getLikedPostsList()==null) user.setLikedPostsList("");
+       if(user.getSavedPostsList()==null) user.setSavedPostsList("");
+       Map<String,Set<Integer>> map = new HashMap<>();
+       map.put("liked",utility.parseStringToInteger(user.getLikedPostsList()));
+       map.put("saved",utility.parseStringToInteger(user.getSavedPostsList()));
+       return map;
+    }
+
+    @Override
+    public String savePostForUser(String email, Integer postId) {
+        User user = getUser(email);
+        ResourcePost post = getPost(postId);
+        if(user.getSavedPostsList()==null){
+            user.setSavedPostsList("");
+        }
+        Set<Integer> set = utility.parseStringToInteger(user.getSavedPostsList());
+        boolean saved = false;
+        if(set.contains(postId)){
+            set.remove(postId);
+            user.setSavedPostsList(utility.parseSetToString(set));
+        }else{
+            saved = true;
+            user.setSavedPostsList(user.getSavedPostsList()+postId+",");
+        }
+        userRepository.save(user);
+        return saved ? "Saved sucessfully":"Removed successfully" ;
+    }
+
     private void parsePosts(List<ResourcePost> resourcePostList){
         for(ResourcePost resourcePost:resourcePostList){
             parseIndividualPost(resourcePost);
         }
     }
+    private User getUser(String email){
+        User user = userRepository.findByEmail(email);
+        if(user==null) throw  new ResourceNotFound("No such user");
+        return user;
+    }
 
+    private ResourcePost getPost(Integer postId){
+        Optional<ResourcePost> resourcePost = resourcePostRepository.findById(postId);
+        if(!resourcePost.isPresent()) throw new BadRequestException("No such post");
+        return resourcePost.get();
+    }
     private void parseIndividualPost(ResourcePost resourcePost){
         List<PostImage> postImages = resourcePost.getPostImages();
         // convert blob to base64
