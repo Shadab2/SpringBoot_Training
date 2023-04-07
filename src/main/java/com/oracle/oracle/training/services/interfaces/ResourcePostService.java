@@ -1,5 +1,6 @@
 package com.oracle.oracle.training.services.interfaces;
 
+import com.oracle.oracle.training.entity.Notificaton;
 import com.oracle.oracle.training.entity.post.Comments;
 import com.oracle.oracle.training.entity.post.PostImage;
 import com.oracle.oracle.training.entity.post.ResourcePost;
@@ -37,4 +38,6 @@ public interface ResourcePostService {
     String savePostForUser(String email, Integer postId);
 
     Map<String, Set<Integer>> getUserMappings(String email);
+
+    List<Notificaton> getNotifications(String email);
 }

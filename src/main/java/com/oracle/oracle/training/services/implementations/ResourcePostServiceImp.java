@@ -31,13 +31,12 @@ public class ResourcePostServiceImp implements ResourcePostService {
     private TechStackRepository techStackRepository;
     @Autowired
     private PostFeedBackRepository postFeedBackRepository;
-
     @Autowired
     private PostImageRepository postImageRepository;
-
     @Autowired
     private PostUtilityService utility;
-
+    @Autowired
+    private NotificationRepository notificationRepository;
     @Autowired
     private SimpMessagingTemplate simpMessagingTemplate;
 
@@ -144,9 +143,11 @@ public class ResourcePostServiceImp implements ResourcePostService {
                     .senderEmail(user.getEmail())
                     .senderName(user.getFirstName()+" "+user.getLastName())
                     .postTitle(post.getTitle())
+                    .receiverEmail(post.getUser().getEmail())
                     .profileImage(user.getProfileImage())
                     .build();
             simpMessagingTemplate.convertAndSend("/global/notification/"+post.getUser().getEmail(),notificaton);
+            notificationRepository.save(notificaton);
         }
         return upvoted ? "Upvoted Succesfully" : "Downvoted Succesfully";
     }
@@ -199,6 +200,7 @@ public class ResourcePostServiceImp implements ResourcePostService {
                 .senderName(user.getFirstName()+" "+user.getLastName())
                 .profileImage(user.getProfileImage())
                 .build();
+        notificationRepository.save(notificaton);
         simpMessagingTemplate.convertAndSend("/global/notification/"+post.getUser().getEmail(),notificaton);
         return comment;
     }
@@ -280,6 +282,12 @@ public class ResourcePostServiceImp implements ResourcePostService {
        map.put("liked",utility.parseStringToInteger(user.getLikedPostsList()));
        map.put("saved",utility.parseStringToInteger(user.getSavedPostsList()));
        return map;
+    }
+
+    @Override
+    public List<Notificaton> getNotifications(String email) {
+        User  user = getUser(email);
+        return notificationRepository.findByReceiverEmail( user.getEmail());
     }
 
     @Override

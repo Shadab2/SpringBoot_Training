@@ -1,5 +1,6 @@
 package com.oracle.oracle.training.controllers;
 
+import com.oracle.oracle.training.entity.Notificaton;
 import com.oracle.oracle.training.entity.post.Comments;
 import com.oracle.oracle.training.entity.post.PostImage;
 import com.oracle.oracle.training.entity.post.ResourcePost;
@@ -97,5 +98,10 @@ public class PostController {
         return new ResponseEntity<>(resourcePostService.getUserMappings(email),HttpStatus.OK);
     }
 
+    @GetMapping("/notifications")
+    public ResponseEntity<List<Notificaton>> getNotifications(HttpServletRequest request){
+        String email = (String)request.getAttribute("email");
+        return  new ResponseEntity<>(resourcePostService.getNotifications(email),HttpStatus.OK);
+    }
 
 }
